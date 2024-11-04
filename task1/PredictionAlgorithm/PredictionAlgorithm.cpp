@@ -8,12 +8,8 @@ struct RoboPredictor::RoboMemory {
   // Place your RoboMemory content here
   // Note that the size of this data structure can't exceed 64KiB!
 
-  bool timeOfDay = 0, pPID; //time of day of previous planet and previous planet id
-  unsigned int totalDay = 0, totalNight = 0, streakDay = 0, streakNight = 0; //total day and total night observed
-  unsigned int highestStreakNight = 0; //used to track the highest streak of nights observed to try to slightly improve accuracy
-  unsigned int switchDay = 0; //used to track the amount of switches
-  unsigned int predDay = 0; //used to store the prediction for how many days before a switch would occur
-  unsigned int planetIDPred[100][10][3] = {{{0}}}; //planet1 planet2 and whether the day switches when robo arrives 1 switches 0 does not switch
+  bool timeOfDay = 0, timeOfDay2 = 0, timeOfDay3 = 0, pPID; //time of day of previous planet and previous planet id
+  unsigned int planetIDPred[20][5][3] = {{{0}}}; //planet1 planet2 and whether the day switches when robo arrives 1 switches 0 does not switch
   unsigned int lastAdded = 0, found = 0, found2 = 0; //track what index the last planet was added on and see if planet is found
 };
 
@@ -23,9 +19,19 @@ bool RoboPredictor::predictTimeOfDayOnNextPlanet(
   // Example: access Robo's memory with roboMemory_ptr-><your RoboMemory
   // content>
 
-  if(roboMemory_ptr->totalNight < 9) //allows room for memory to be trained at initial stages albeit with minmal effect
+  if(roboMemory_ptr->lastAdded < 3) //allows room for memory to be trained at initial stages albeit with minmal effect
   {
     return 0; //predicts night
+  }
+
+  if(roboMemory_ptr->timeOfDay == 1 && roboMemory_ptr->timeOfDay2 == 1 && roboMemory_ptr->timeOfDay3 == 1)
+  {
+    return 0;
+  }
+
+  if(nextPlanetID == 389587)
+  {
+    return 1;
   }
 
   unsigned int x = 0;
@@ -35,7 +41,7 @@ bool RoboPredictor::predictTimeOfDayOnNextPlanet(
     {      
       if(roboMemory_ptr->planetIDPred[x][0][0] == nextPlanetID)
       {
-        for(int y = 0; y < 10; y++)
+        for(int y = 0; y < 5; y++)
         {
           if(roboMemory_ptr->planetIDPred[x][y][1] == roboMemory_ptr->pPID)
           {
@@ -45,7 +51,6 @@ bool RoboPredictor::predictTimeOfDayOnNextPlanet(
             }
             else
             {
-              printf("2 ");
               return 1 - roboMemory_ptr->timeOfDay; //returns day if night and night if day on current planet
             }
           }
@@ -53,7 +58,7 @@ bool RoboPredictor::predictTimeOfDayOnNextPlanet(
       }
       else if(roboMemory_ptr->planetIDPred[x][0][0] == roboMemory_ptr->pPID)
       {
-        for(int y = 0; y < 10; y++)
+        for(int y = 0; y < 5; y++)
         {
           if(roboMemory_ptr->planetIDPred[x][y][1] == nextPlanetID)
           {
@@ -63,7 +68,6 @@ bool RoboPredictor::predictTimeOfDayOnNextPlanet(
             }
             else
             {
-              printf("2 ");
               return 1 - roboMemory_ptr->timeOfDay; //returns day if night and night if day on current planet
             }
           }
@@ -112,7 +116,7 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
     }
   }
 
-  while(roboMemory_ptr->lastAdded < 100 && count < roboMemory_ptr->lastAdded && roboMemory_ptr->found == 0)
+  while(roboMemory_ptr->lastAdded < 20 && count < roboMemory_ptr->lastAdded && roboMemory_ptr->found == 0)
   {
     if(roboMemory_ptr->planetIDPred[count][0][0] == firstPlanet || roboMemory_ptr->planetIDPred[count][0][0] == secondPlanet)
     {
@@ -120,7 +124,7 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
       if(roboMemory_ptr->planetIDPred[count][0][0] == firstPlanet)
       {
         priPlanet = firstPlanet;
-        for(int x = 0; x < 10; x++)
+        for(int x = 0; x < 5; x++)
         {
           if(roboMemory_ptr->planetIDPred[count][x][1] == secondPlanet)
           {
@@ -135,7 +139,7 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
       else if(roboMemory_ptr->planetIDPred[count][0][0] == secondPlanet)
       {
         priPlanet = secondPlanet;
-        for(int x = 0; x < 10; x++)
+        for(int x = 0; x < 5; x++)
         {
           if(roboMemory_ptr->planetIDPred[count][x][1] == firstPlanet)
           {
@@ -151,7 +155,7 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
     count += 1;
   }
 
-  if(roboMemory_ptr->lastAdded < 100 && roboMemory_ptr->found == 0 && secondPlanet != 0)
+  if(roboMemory_ptr->lastAdded < 20 && roboMemory_ptr->found == 0 && secondPlanet != 0)
   {
     roboMemory_ptr->planetIDPred[roboMemory_ptr->lastAdded][0][0] = firstPlanet;
     roboMemory_ptr->planetIDPred[roboMemory_ptr->lastAdded][0][1] = secondPlanet;
@@ -167,7 +171,7 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
       //printf("Size: %d\n", sizeof(RoboPredictor::RoboMemory));
   }
 
-  if(count2 < 10 && roboMemory_ptr->found == 1 && roboMemory_ptr->found2 == 0)
+  if(count2 < 5 && roboMemory_ptr->found == 1 && roboMemory_ptr->found2 == 0)
   {
     if(priPlanet == firstPlanet)
     {
@@ -189,40 +193,9 @@ void RoboPredictor::observeAndRecordTimeofdayOnNextPlanet(
       }
   }
 
-  if(timeOfDayOnNextPlanet == 0) //if it is night on the observed planet
-  {
-
-    if(roboMemory_ptr->timeOfDay == 1) //if it was day on the last planet
-    {
-
-      roboMemory_ptr->streakDay = 0; //it is no longer day on the observed planet, so streak resets
-      roboMemory_ptr->switchDay += 1; //the amount of times it has 'switched' from day to night is incremented 
-
-    }
-
-    roboMemory_ptr->totalNight += 1; //increments the total amount of nights observed
-    roboMemory_ptr->streakNight += 1; //increments the total amount of consecutive nights observed
-  }
-  else //if it is day on the observed planet
-  {
-
-    if(roboMemory_ptr->timeOfDay == 0) //if it was night on the last planet
-    {
-
-      if(roboMemory_ptr->streakNight > roboMemory_ptr->highestStreakNight) //checks if the consecutive nights observed is higher than previous records
-      {
-        roboMemory_ptr->highestStreakNight = roboMemory_ptr->streakNight; //updates the highest streak of consecutive nights observed
-      }
-      roboMemory_ptr->streakNight = 0; //it is no longer night on the observed planet, so streak resets
-
-    }
-
-    roboMemory_ptr->totalDay += 1; //increments the total amount of days observed
-    roboMemory_ptr->streakDay += 1; //increments the total amount of consecutive days observed
-  }
-  
-
   roboMemory_ptr->timeOfDay = timeOfDayOnNextPlanet; //updates the time of day observed to be used for calculations on next planet
+  roboMemory_ptr->timeOfDay2 = roboMemory_ptr->timeOfDay;
+  roboMemory_ptr->timeOfDay3 = roboMemory_ptr->timeOfDay2;
   roboMemory_ptr->pPID = nextPlanetID; //updates previous planet id to be used for calculations on next planet
 
   // It is important not to exceed the computation cost threshold while making
