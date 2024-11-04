@@ -6,11 +6,11 @@ CC=/usr/bin/clang-16
 CXX=/usr/bin/clang++-16
 LD=/usr/bin/ld.lld-16
 
-INCLUDES=$(TECHARENA24_TASK1_DIR)/common/install/include
-COMMON_INCLUDES=$(TECHARENA24_TASK1_DIR)/common
-SYSROOT=$(TECHARENA24_TASK1_DIR)/common/install
-LIBS=$(TECHARENA24_TASK1_DIR)/common/install/lib
-DYN_INSTR_COUNT_DIR=$(TECHARENA24_TASK1_DIR)/common/DynamicInstructionCounting
+INCLUDES = /project/common/install/include
+COMMON_INCLUDES = /project/common
+SYSROOT = /project/common/install
+LIBS = /project/common/install/lib
+DYN_INSTR_COUNT_DIR=/project/common/DynamicInstructionCounting
 
 CXXFLAGS=--sysroot $(SYSROOT) -nostdlib -nostdinc++ -nostdlib++ \
 	 -isystem $(INCLUDES)/c++/v1/ -isystem $(INCLUDES)/x86_64-pc-linux-musl/c++/v1 -isystem $(COMMON_INCLUDES) \
