@@ -31,6 +31,10 @@ CXXFLAGS += -fpass-plugin=$(DYN_INSTR_COUNT_DIR)/libDynamicInstructionCounting.s
 
 #-------------------------------------------------------------------
 
+# export MSYS_NO_PATHCONV=1 (USE THIS FOR TESTING IN BASH TERMINAL OTHERWISE WONT WORK)
+# export USER="leo" (USE THIS TO SET CONTAINER NAME)
+# tar -czvf lonelyTask1.tar.gz -C . . (USE THIS TO CREATE tar.gz FILE)
+
 # Main makefile logic to prepare libTask1PredictionAlgorithm.so. 
 # This part can be modified if needed. 
 
